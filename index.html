@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ตูนเป็นเกย์หรือไม่ 🐒</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap');
+
+        body,
+        html {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            font-family: 'Kanit', sans-serif;
+            overflow: hidden;
+        }
+
+        /* --- ฉาก 1: หน้าจอ Hacker --- */
+        #start-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            background: #b39ddb;
+            color: #4a148c;
+            text-align: center;
+            position: absolute;
+            width: 100%;
+            z-index: 1000;
+        }
+
+        #start-page h1 {
+            font-size: 2.8rem;
+            text-shadow: 0 0 20px rgba(74, 20, 140, 0.5);
+            margin-bottom: 10px;
+        }
+
+        #start-page p {
+            font-size: 1.1rem;
+            color: #4a148c;
+            margin-bottom: 10px;
+        }
+
+        .btn-analyze {
+            padding: 15px 40px;
+            border: 2px solid #4a148c;
+            background: transparent;
+            color: #4a148c;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: 0.3s;
+            margin-top: 20px;
+            font-family: 'Kanit', sans-serif;
+        }
+
+        .btn-analyze:hover {
+            background: #4a148c;
+            color: white;
+            box-shadow: 0 0 30px #7c43bd;
+        }
+
+        /* --- หน้าต่าง Error ปลอม --- */
+        .fake-error {
+            position: fixed;
+            width: 220px;
+            background: #111;
+            border: 2px solid #b39ddb;
+            padding: 12px;
+            box-shadow: 5px 5px 0px #b39ddb, 0 0 15px rgba(179, 157, 219, 0.3);
+            font-size: 12px;
+            color: #ce93d8;
+            z-index: 2000;
+            transition: all 0.5s ease-in;
+            border-radius: 8px;
+        }
+
+        .fake-error strong {
+            color: #ff6b6b;
+        }
+
+        /* ลิงที่จะมาดึง Error ออกไป */
+        #thief-monkey {
+            position: fixed;
+            font-size: 60px;
+            z-index: 3000;
+            display: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none;
+            filter: drop-shadow(0 0 10px rgba(179, 157, 219, 0.5));
+        }
+
+        /* --- ฉาก 2: หน้า Reveal (สีฟ้า) --- */
+        #reveal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1628 0%, #0d1f3c 30%, #102a50 60%, #0a1628 100%);
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 500;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 1s;
+        }
+
+        /* Particle background */
+        #reveal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 20% 50%, rgba(77, 159, 255, 0.08) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(100, 180, 255, 0.06) 0%, transparent 50%),
+                radial-gradient(circle at 50% 80%, rgba(77, 159, 255, 0.05) 0%, transparent 50%);
+            z-index: 0;
+        }
+
+        /* องค์ประกอบพื้นหลัง */
+        .bg-element {
+            position: fixed;
+            font-size: 30px;
+            z-index: 1;
+            pointer-events: none;
+            animation: moveAround 8s linear infinite;
+            opacity: 0.5;
+        }
+
+        /* แฮมสเตอร์และลิงวิ่งตัดหน้า */
+        .front-runner {
+            position: fixed;
+            font-size: 50px;
+            z-index: 600;
+            pointer-events: none;
+            animation: sprint 4s linear infinite;
+        }
+
+        @keyframes moveAround {
+            0% {
+                transform: translate(0, 0) rotate(0deg);
+            }
+
+            25% {
+                transform: translate(30vw, 20vh) rotate(90deg);
+            }
+
+            50% {
+                transform: translate(60vw, -10vh) rotate(180deg);
+            }
+
+            75% {
+                transform: translate(20vw, 40vh) rotate(270deg);
+            }
+
+            100% {
+                transform: translate(0, 0) rotate(360deg);
+            }
+        }
+
+        @keyframes sprint {
+            0% {
+                left: -150px;
+                top: var(--y-pos);
+                transform: scaleX(1);
+            }
+
+            45% {
+                left: 110vw;
+                top: var(--y-pos);
+                transform: scaleX(1);
+            }
+
+            50% {
+                left: 110vw;
+                transform: scaleX(-1);
+            }
+
+            95% {
+                left: -150px;
+                top: var(--y-next);
+                transform: scaleX(-1);
+            }
+
+            100% {
+                left: -150px;
+                transform: scaleX(1);
+            }
+        }
+
+        .title {
+            color: #4d9fff;
+            font-size: 3.5rem;
+            font-weight: 600;
+            margin: 0;
+            z-index: 510;
+            text-shadow: 0 0 30px rgba(77, 159, 255, 0.5), 0 0 60px rgba(77, 159, 255, 0.2);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 20px rgba(77, 159, 255, 0.4), 0 0 40px rgba(77, 159, 255, 0.2);
+            }
+
+            to {
+                text-shadow: 0 0 40px rgba(77, 159, 255, 0.7), 0 0 80px rgba(77, 159, 255, 0.4);
+            }
+        }
+
+        .image-container {
+            width: 320px;
+            height: 320px;
+            margin: 25px 0;
+            border-radius: 50%;
+            border: 6px solid rgba(77, 159, 255, 0.6);
+            box-shadow: 0 0 40px rgba(77, 159, 255, 0.3), 0 0 80px rgba(77, 159, 255, 0.1), inset 0 0 30px rgba(77, 159, 255, 0.1);
+            overflow: hidden;
+            background: #0d1f3c;
+            z-index: 510;
+            position: relative;
+            animation: borderPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes borderPulse {
+
+            0%,
+            100% {
+                border-color: rgba(77, 159, 255, 0.6);
+                box-shadow: 0 0 40px rgba(77, 159, 255, 0.3), 0 0 80px rgba(77, 159, 255, 0.1);
+            }
+
+            50% {
+                border-color: rgba(100, 180, 255, 0.9);
+                box-shadow: 0 0 60px rgba(77, 159, 255, 0.5), 0 0 100px rgba(77, 159, 255, 0.2);
+            }
+        }
+
+        .image-container video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Placeholder สำหรับกรณีไม่มีวิดีโอ */
+        .image-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 100px;
+            background: linear-gradient(135deg, #0d1f3c, #1a3a6a);
+        }
+
+        .message {
+            color: #a0c4ff;
+            font-size: 1.15rem;
+            line-height: 1.8;
+            padding: 0 20px;
+            z-index: 510;
+            font-weight: 400;
+            max-width: 600px;
+        }
+
+        .message b {
+            color: #4d9fff;
+            font-size: 1.4rem;
+        }
+
+        .btn-close {
+            margin-top: 30px;
+            padding: 14px 45px;
+            background: linear-gradient(135deg, #4d9fff, #2d7fd9);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 510;
+            font-size: 1rem;
+            font-family: 'Kanit', sans-serif;
+            box-shadow: 0 5px 25px rgba(77, 159, 255, 0.4);
+            transition: all 0.3s;
+        }
+
+        .btn-close:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 35px rgba(77, 159, 255, 0.6);
+        }
+
+        .shake {
+            animation: shake 0.1s infinite;
+        }
+
+        @keyframes shake {
+            0% {
+                transform: translate(2px, 2px);
+            }
+
+            50% {
+                transform: translate(-2px, -2px);
+            }
+
+            100% {
+                transform: translate(2px, -2px);
+            }
+        }
+
+        /* Floating hearts */
+        .floating-heart {
+            position: fixed;
+            z-index: 505;
+            pointer-events: none;
+            opacity: 0;
+            animation: floatUp 4s ease-out forwards;
+        }
+
+        @keyframes floatUp {
+            0% {
+                opacity: 0;
+                transform: translateY(0) scale(0);
+            }
+
+            20% {
+                opacity: 1;
+                transform: translateY(-30px) scale(1);
+            }
+
+            100% {
+                opacity: 0;
+                transform: translateY(-200px) scale(0.5);
+            }
+        }
+
+        /* Scanline effect for hacker page */
+        #start-page::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(0deg,
+                    rgba(74, 20, 140, 0.06) 0px,
+                    rgba(74, 20, 140, 0.06) 1px,
+                    transparent 1px,
+                    transparent 3px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Typing cursor effect */
+        .typing-cursor::after {
+            content: '|';
+            animation: blink 0.7s infinite;
+        }
+
+        @keyframes blink {
+
+            0%,
+            50% {
+                opacity: 1;
+            }
+
+            51%,
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="start-page">
+        <h1 id="main-title">🐒 ตูนเป็นเกย์หรือไม่ 🐒</h1>
+        <p id="sub-title" class="typing-cursor">กดปุ่ม START เพื่อตรวจสอบ </p>
+        <button class="btn-analyze" id="start-btn" onclick="startGlitchSequence()">START</button>
+    </div>
+
+    <div id="thief-monkey">🐒</div>
+
+    <div id="reveal">
+        <h1 class="title">ถูกแล้ว ตูนเป็นเกย์ 🏳️‍🌈</h1>
+        <div class="image-container">
+            <div class="image-placeholder">💙</div>
+            <!-- ถ้ามีวิดีโอ ให้ลบ div.image-placeholder แล้วใส่:
+            <video autoplay loop muted playsinline>
+                <source src="video.mp4" type="video/mp4">
+            </video>
+            -->
+        </div>
+        <div class="message">
+            แล้ววันนี้คุณเป็นเกย์หรือยัง 🏳️‍🌈<br>
+            <b>ตูนเป็นเกย์ 100% 🐒</b>
+        </div>
+        <button class="btn-close" onclick="showLoveAlert()">ปิดระบบ</button>
+    </div>
+
+    <script>
+        let errorCount = 0;
+        const maxErrors = 12;
+        const errors = [];
+
+        function startGlitchSequence() {
+            document.getElementById('start-btn').style.display = 'none';
+            document.getElementById('sub-title').classList.remove('typing-cursor');
+            document.getElementById('sub-title').innerText = '';
+            document.getElementById('main-title').innerText = 'ANALYZING...';
+
+            const interval = setInterval(() => {
+                if (errorCount < maxErrors) {
+                    createError();
+                    errorCount++;
+                } else {
+                    clearInterval(interval);
+                    startMonkeyThief();
+                }
+            }, 250);
+        }
+
+        function createError() {
+            const err = document.createElement('div');
+            err.className = 'fake-error';
+            const msgs = [
+                'Gay Virus detected! 🏳️‍🌈',
+                'Gay.exe has crashed! 🐒',
+                'Rainbow overflow error! 🌈',
+                'Too much gayness! ✨',
+                'Toon detected in system! 🐒'
+            ];
+            err.innerHTML = `<strong>⚠ WARNING:</strong> <br> ${msgs[Math.floor(Math.random() * msgs.length)]} <br> [Error_Code: 0xLOVE_NAK]`;
+            err.style.left = Math.random() * (window.innerWidth - 220) + 'px';
+            err.style.top = Math.random() * (window.innerHeight - 100) + 'px';
+            document.body.appendChild(err);
+            errors.push(err);
+        }
+
+        async function startMonkeyThief() {
+            document.body.classList.add('shake');
+            document.getElementById('main-title').innerText = 'SYSTEM OVERLOAD!!!';
+
+            const monkey = document.getElementById('thief-monkey');
+            monkey.style.display = 'block';
+
+            for (const err of errors) {
+                const rect = err.getBoundingClientRect();
+                monkey.style.left = rect.left + 'px';
+                monkey.style.top = rect.top + 'px';
+
+                await new Promise(r => setTimeout(r, 350));
+
+                err.style.transform = "scale(0) rotate(720deg)";
+                setTimeout(() => err.remove(), 400);
+            }
+
+            setTimeout(() => {
+                monkey.style.display = 'none';
+                document.body.classList.remove('shake');
+                document.getElementById('start-page').style.display = 'none';
+
+                const reveal = document.getElementById('reveal');
+                reveal.style.display = 'flex';
+                setTimeout(() => { reveal.style.opacity = '1'; }, 50);
+
+                initRevealElements();
+                startFloatingHearts();
+            }, 500);
+        }
+
+        function initRevealElements() {
+            const symbols = ['💙', '🐒', '✨', '💎', '🐒', '⭐', '💙', '🌟'];
+            for (let i = 0; i < 25; i++) {
+                const div = document.createElement('div');
+                div.className = 'bg-element';
+                div.innerText = symbols[i % symbols.length];
+                div.style.left = Math.random() * 100 + 'vw';
+                div.style.top = Math.random() * 100 + 'vh';
+                div.style.animationDuration = (Math.random() * 4 + 4) + 's';
+                div.style.animationDelay = (Math.random() * 5) + 's';
+                document.body.appendChild(div);
+            }
+
+            const runners = ['🐒', '💙', '🐒', '✨', '🐒', '💎'];
+            runners.forEach((emoji, i) => {
+                const run = document.createElement('div');
+                run.className = 'front-runner';
+                run.innerText = emoji;
+                const yPos = Math.random() * 80 + 10;
+                run.style.setProperty('--y-pos', yPos + '%');
+                run.style.setProperty('--y-next', (yPos + (Math.random() * 20 - 10)) + '%');
+                run.style.animationDelay = (i * 0.8) + 's';
+                document.body.appendChild(run);
+            });
+        }
+
+        function startFloatingHearts() {
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.className = 'floating-heart';
+                heart.innerText = ['💙', '✨', '💎', '⭐'][Math.floor(Math.random() * 4)];
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.top = (Math.random() * 40 + 60) + 'vh';
+                heart.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                document.body.appendChild(heart);
+                setTimeout(() => heart.remove(), 4000);
+            }, 600);
+        }
+
+        function showLoveAlert() {
+            // สร้าง custom alert แทน alert ปกติ
+            const overlay = document.createElement('div');
+            overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.7);z-index:9999;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(5px);';
+
+            const box = document.createElement('div');
+            box.style.cssText = 'background:linear-gradient(135deg,#0d1f3c,#1a3a6a);padding:40px 50px;border-radius:20px;text-align:center;color:white;font-family:Kanit;box-shadow:0 0 60px rgba(77,159,255,0.4);border:2px solid rgba(77,159,255,0.3);animation:popIn 0.4s cubic-bezier(0.175,0.885,0.32,1.275);';
+            box.innerHTML = `
+                <div style="font-size:60px;margin-bottom:15px;">🏳️‍🌈</div>
+                <div style="font-size:1.8rem;font-weight:600;color:#4d9fff;margin-bottom:10px;">คุณเป็นเกย์แล้ว!</div>
+                <div style="font-size:1.1rem;color:#a0c4ff;">ยินดีด้วย ตูน 🐒🏳️‍🌈</div>
+                <button onclick="this.parentElement.parentElement.remove()" style="margin-top:25px;padding:10px 35px;background:linear-gradient(135deg,#4d9fff,#2d7fd9);color:white;border:none;border-radius:50px;font-size:1rem;cursor:pointer;font-family:Kanit;font-weight:600;box-shadow:0 5px 20px rgba(77,159,255,0.4);">ปิด 🏳️‍🌈</button>
+            `;
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+
+            // Add popIn animation
+            const style = document.createElement('style');
+            style.textContent = '@keyframes popIn{0%{transform:scale(0);opacity:0}100%{transform:scale(1);opacity:1}}';
+            document.head.appendChild(style);
+        }
+    </script>
+</body>
+
+</html>
